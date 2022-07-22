@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# This script is displaying "Holberton School" 10 times
-sudo touch /var/run/holbertonscript.pid
-sudo bash -c "echo $$ > /var/run/holbertonscript.pid"
+# This script is displaying "To infinity and beyond" 10 times
+sudo touch /var/run/myscript.pid
+sudo bash -c "echo $$ > /var/run/myscript.pid"
 
 trap interrup2 SIGINT
 trap interrup1 SIGTERM
@@ -9,7 +9,7 @@ trap interrup3 SIGQUIT
 
 interrup3()
 {
-    sudo rm /var/run/holbertonscript.pid
+    sudo rm /var/run/myscript.pid
     exit $?
 }
 
@@ -21,7 +21,7 @@ interrup2()
 interrup1()
 {
     echo "I hate the kill command"
-    sudo rm /var/run/holbertonscript.pid
+    sudo rm /var/run/myscript.pid
     exit $?
 }
 
