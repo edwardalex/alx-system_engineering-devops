@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2016
+# Requirements:
+#    Install nginx on your web-01 server
+#    Nginx should be listening on port 80
+#    When querying Nginx at its root / with a GET request (requesting a page) using curl, 
+#      it must return a page that contains the string Hello World
+#    As an answer file, write a Bash script that configures a new Ubuntu machine to
+#      respect above requirements (this script will be run on the server itself)
+#    You can’t use systemctl for restarting nginx
+
+# update and install nginx
+apt-get update
+apt-get install -y nginx
+
+# remove in directories in case they exist to avoid errors and then create root directories
+rm -r /var/www/example.com
+mkdir -p /var/www/example.com/html
+
+# give permissions to directories and change owners
+chown -R "$USER":"$USER" /var/www/example.com/html
+chmod -R 755 /var/www
+
+# create index file
+touch /var/www/example.com/html/index.html
+echo "Hello World" > /var/www/example.com/html/index.html
+
+# create error file
+touch "/var/www/example.com/html/error_page.html"
+echo "Ceci n'est pas une page" > /var/www/example.com/html/error_page.html
+
+# copy the new_default file into sites available directorie
+cp new_default /etc/nginx/sites-available/default
+
+# edit config files
+sed -i 's/# server_names_hash_bucket_size 64;/server_names_hash_bucket_size 64;/' /etc/nginx/nginx.conf
+
+# check the syntax and restart the service
+nginx -t
+sudo /etc/init.d/nginx restart
