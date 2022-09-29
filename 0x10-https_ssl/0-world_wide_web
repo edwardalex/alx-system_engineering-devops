@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#    domain:
+#        type: string
+#        what: domain name to audit
+#        mandatory: yes
+#    subdomain:
+#        type: string
+#        what: specific subdomain to audit
+#        mandatory: no
+# Output: The subdomain [SUB_DOMAIN] is a [RECORD_TYPE] record and points to [DESTINATION]
+function print_info(){
+	subdomains=("www" "lb-01" "web-01" "web-02")
+	if [ $2 ]
+	then
+		record="dig $2.$1 | awk '/\t[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/'"
+		echo "The subdomain $2 is a "$(eval "$record" | awk '{print $4}') "record and points to $(eval "$record" | awk '{print $5}')"
+	else
+		for sub in ${subdomains[@]}; do
+			record="dig $sub.$1 | awk '/\t[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/'"
+			echo "The subdomain $sub is a "$(eval "$record" | awk '{print $4}') "record and points to $(eval "$record" | awk '{print $5}')"
+		done
+	fi
+}
+print_info "$1" "$2"
