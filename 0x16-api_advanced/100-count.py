@@ -1,34 +1,48 @@
 #!/usr/bin/python3
-"""Recursive function that queries the Reddit API and returns a list
-containing the titles of all hot articles for a given subreddit"""
+""" Write a recursive function that queries the Reddit API """
+from requests import get
 
-import requests
+REDDIT = "https://www.reddit.com/"
+HEADERS = {'user-agent': 'my-app/0.0.1'}
 
 
-def recurse(subreddit, hot_list=[], after=None):
-    """Returns list of hot articles for a given subreddit"""
+def recurse(subreddit, hot_list=[], after=""):
+    """
+    Returns a list containing the titles of all hot articles for a given
+    subreddit. If no results are found for the given subreddit, the function
+    should return None.
+    """
+    if after is None:
+        return hot_list
 
-    header = {"User-Agent": "Jose98"}
-    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-    response = requests.get(url, headers=header, allow_redirects=False)
+    url = REDDIT + "r/{}/hot/.json".format(subreddit)
 
-    # Establish after fullname
-    nxt = None
-    if after:
-        nxt = {'after': after}
-    response = requests.get(url,
-                            headers=header, allow_redirects=False, params=nxt)
+    params = {
+        'limit': 100,
+        'after': after
+    }
 
-    if response.status_code != 200:
+    r = get(url, headers=HEADERS, params=params, allow_redirects=False)
+
+    if r.status_code != 200:
         return None
 
-    after = response.json().get('data').get('after')
-    # append articles for the given subreddit in the current page
-    for post in response.json().get('data').get('children'):
-        hot_list.append(post.get('data').get('title'))
+    try:
+        js = r.json()
 
-    # If there are more next pages call recurse function again
-    if after:
-        return recurse(subreddit, hot_list, after)
-    # otherwise return the list with all hot articles for the given subreddit
-    return hot_list
+    except ValueError:
+        return None
+
+    try:
+
+        data = js.get("data")
+        after = data.get("after")
+        children = data.get("children")
+        for child in children:
+            post = child.get("data")
+            hot_list.append(post.get("title"))
+
+    except:
+        return None
+
+    return recurse(subreddit, hot_list, after)
